@@ -10,16 +10,13 @@ const Chat = (props) => {
     const [appointmentWith, setAppointmentWith] = useState('');
 
     useEffect(() => {
-        socket.emit('joinRoom', { username: props.user.name, room: props.chatRoom });
+        socket.emit('joinRoom', { username: props.username, room: props.chatRoom });
 
-        // socket.on('roomUsers', ({ room, users }) => {
-        //     console.log('room', room);
-        //     console.log('users', users);
-        // });
-
-        const onMessage = (message) => {
-            console.log('message', message);
-            addMessage(message?.username, message?.text);
+        const onMessage = (messages) => {
+            console.log('messages', messages);
+            let chatContainer = document.querySelector('.chat-container');
+            chatContainer.innerHTML = '';
+            messages.forEach(m => addMessage(m?.username, m?.text, m?.time));
         }
 
         socket.on('message', onMessage);
@@ -87,10 +84,6 @@ const Chat = (props) => {
                 <span style={{ color: 'white' }}>Appointment With: {appointmentWith ? appointmentWith : props.appointmentWith}</span>
             </div>
             <div className='chat-container' style={{ width: '100%', height: '500px', background: 'white', overflowY: 'auto' }}>
-                {/* <div className='message'>
-                    <span>{newMessage.user ? newMessage.user + ': ' : ''}{newMessage.timespan}</span>
-                    <span>{newMessage.message}</span>
-                </div> */}
             </div>
             <div style={{ width: '100%', height: '75px', background: '#1976d2', display: 'flex', flexDirection: 'row' }}>
                 <TextField 

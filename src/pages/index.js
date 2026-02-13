@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { GetUserApi, UpdateUserApi } from '../api/UserApi';
 import { Button, TextField  } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -43,15 +43,22 @@ const Homepage = () => {
             })
     }, []);
 
+
+    const userRef = useRef(user);
+
     useEffect(() => {
+        userRef.current = user;
+    }, [user]);
+
+    useEffect(() => {
+        if (user?.is_dentist === undefined || !user?.id) return;
+        
         const interval = setInterval(() => {
-            fetchAppointments(user);
+            fetchAppointments(userRef.current);
         }, 60000);
 
-        return (() => {
-            clearInterval(interval);
-        })
-    }, []);
+        return () => clearInterval(interval);
+    }, [user.is_dentist]);
 
 
     const fetchAppointments = async (user) => {
@@ -84,10 +91,7 @@ const Homepage = () => {
 
     const checkAppointmentsTime = (appointments, user) => {
         let currentDate = new Date();
-        appointments.map(app => {
-            // console.log('hour', moment(app.start_date).hours(), moment(app.start_date).minutes());
-            // console.log('current', moment(currentDate).hours(), moment(currentDate).minutes());
-
+        appointments.forEach(app => {
             if (moment(app.end_date).hours() === moment(currentDate).hours() && moment(app.end_date).minutes() <= moment(currentDate).minutes()) {
                 setChatStarted(false);
                 setChatRoom(null);
@@ -241,18 +245,10 @@ const Homepage = () => {
                         Find Dentist
                     </Button>
                 }
-                <Button
-                    sx={{ marginTop: '30px', marginLeft: '20px' }}
-                    size='large'
-                    variant='contained'
-                    onClick={() => setChatStarted(true)}
-                >
-                    Start Chat
-                </Button>
             </div>
             {chatStarted && 
                 <Chat
-                    user={user}
+                    username={user.name}
                     chatRoom={chatRoom}
                     appointmentWith={appointmentWith}
                     appointmentTitle={appointmentTitle}
